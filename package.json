@@ -1,5 +1,12 @@
 {
   "devDependencies": {
-    "cypress": "^12.15.0"
+    "cypress": "^12.15.0",
+    "eslint": "^7.32.0"
+  },
+  "scripts": {
+    "lint": "eslint cypress/**/*.js",
+    "lint:fix": "eslint cypress/**/*.js --fix",
+    "npm run lint": "npm run lint:fix"
+
   }
 }
