@@ -1,0 +1,101 @@
+node_modules/
+cypress/videos/
+cypress/screenshots/
+
+
+const { defineConfig } = require("cypress");
+
+module.exports = defineConfig({
+  e2e: {
+    baseUrl: 'https://www.saucedemo.com',
+    env: {
+
+      standard: {
+        username: 'standard_user',
+        password: 'secret_sauce'
+      },
+    
+    },
+    setupNodeEvents(on, config) {
+      // implement node event listeners here
+    },
+  },
+});
+
+
+
+{
+  "lista_de_produtos": {
+    "produto1": "Sauce Labs Backpack",
+    "produto2": "Sauce Labs Bike Light",
+    "produto3": "Sauce Labs Bolt T-Shirt"
+
+  },
+  "comprador_1": {
+    "firstName": "Maria",
+    "lastName": "Santos",
+    "postalCode": "12345"
+  }
+}
+
+
+describe('Login Tests', () => {
+  it('Login Válido Usuário standard_user', () => {
+    cy.loginSauce();
+
+    //Valição
+    cy.url().should('include', '/inventory.html');
+	cy.get('.title').should('have.text', 'Products');
+  });
+
+  it('Login Inválido - Usuário padrão com senha errada', () => {
+    // Navigate to the login page
+    cy.visit('https://www.saucedemo.com/');
+    cy.get('[data-test="username"]').should('be.visible').type('standard_user');
+    cy.get('[data-test="password"]').should('be.visible').type('wrong_password', { log: false });
+    cy.get('[data-test="login-button"]').click();     
+    // Validação mensagem de erro
+    cy.get('[data-test="error"]').should('be.visible')
+      .and('contain.text', 'Epic sadface')
+      .and('contain.text', 'do not match any user');
+    // Continua na página de login
+    cy.url().should('eq', 'https://www.saucedemo.com/');
+  });
+    
+});
+
+describe('Compra Completa - SauceDemo', () => {
+    beforeEach(() => {
+    cy.loginSauce()
+  })
+  it('Adicionar um produto no carrinho e realizar checkout completo', () => {
+    // Valida que estamos na página de produtos
+    cy.url().should('include', '/inventory.html');
+    cy.get('.title').should('have.text', 'Products');
+    // Adiciona 1 item usando fixture
+    cy.selecionarProduto('produto1');
+    // Valida badge do carrinho = 1
+    cy.get('.shopping_cart_badge').should('have.text', '1');
+  // Vai para o carrinho 
+  cy.irParaCarrinho();
+  // Checkout completo 
+  cy.realizarCheckout('comprador_1');
+  // Valida página de sucesso (
+  cy.validarCheckoutCompleto();
+  });
+  it('Adicionar dois produtos no carrinho e realizar checkout completo', () => {
+    // Garante que estamos na página de produtos
+    cy.url().should('include', '/inventory.html');  
+    // Adiciona 1 item usando fixture
+    cy.selecionarProduto('produto1', 'produto2');
+    // Valida badge do carrinho
+    cy.get('.shopping_cart_badge').should('have.text', '2');
+    // Vai para o carrinho (comando customizado)
+    cy.irParaCarrinho();
+    // Checkout completo (comando customizado)
+    cy.realizarCheckout('comprador_1');
+   // Valida página de sucesso (comando customizado)
+   cy.validarCheckoutCompleto();
+  });
+});
+
